@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Journey / الرحلة — B1 to C1</title>
+<style>
+  :root{
+    --bg:#0c1322;
+    --bg-alt:#0f1a2e;
+    --card:#141f38;
+    --card-hover:#182545;
+    --border:#22335a;
+    --text:#e7ecf7;
+    --muted:#8fa0c4;
+    --accent:#2dd4bf;
+    --accent-dim:#134e4a;
+    --amber:#f5a962;
+    --rose:#fb7185;
+    --track:#1c2947;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI',Tahoma,Arial,sans-serif;
+    background:
+      radial-gradient(circle at 15% 0%, #10233a 0%, transparent 45%),
+      radial-gradient(circle at 85% 100%, #10233a 0%, transparent 40%),
+      var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    padding:32px 16px 80px;
+  }
+  .wrap{max-width:920px;margin:0 auto;}
+
+  header{text-align:center;margin-bottom:8px;}
+  header h1{font-size:1.9rem;margin:0 0 4px;letter-spacing:0.3px;}
+  header .ar{font-size:1.15rem;color:var(--muted);direction:rtl;margin-bottom:18px;}
+
+  .overall{
+    background:var(--card);border:1px solid var(--border);border-radius:14px;
+    padding:18px 22px;margin-bottom:30px;
+  }
+  .overall-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+  .overall-top .label{color:var(--muted);font-size:0.85rem;letter-spacing:0.5px;text-transform:uppercase;}
+  .overall-top .pct{font-size:1.4rem;font-weight:700;color:var(--accent);}
+  .rail{position:relative;height:10px;border-radius:6px;background:var(--track);overflow:hidden;}
+  .rail-fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--rose),var(--amber),var(--accent));width:0%;transition:width .5s ease;border-radius:6px;}
+  .rail-marks{display:flex;justify-content:space-between;margin-top:6px;font-size:0.72rem;color:var(--muted);}
+
+  .stage{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:18px;overflow:hidden;transition:border-color .25s;}
+  .stage.expanded{border-color:var(--accent);}
+  .stage-head{display:flex;align-items:center;gap:14px;padding:18px 20px;cursor:pointer;user-select:none;}
+  .stage-head:hover{background:var(--card-hover);}
+  .dot{width:14px;height:14px;border-radius:50%;flex:none;border:3px solid var(--muted);}
+  .stage[data-level="b1"] .dot{border-color:var(--rose);}
+  .stage[data-level="b2"] .dot{border-color:var(--amber);}
+  .stage[data-level="c1"] .dot{border-color:var(--accent);}
+  .stage.complete .dot{background:currentColor;}
+
+  .stage-head .titles{flex:1;}
+  .badge{display:inline-block;font-size:0.7rem;font-weight:700;letter-spacing:0.6px;padding:2px 9px;border-radius:20px;margin-bottom:5px;text-transform:uppercase;}
+  .stage[data-level="b1"] .badge{background:#3a1220;color:var(--rose);}
+  .stage[data-level="b2"] .badge{background:#3a2712;color:var(--amber);}
+  .stage[data-level="c1"] .badge{background:#0e2f2b;color:var(--accent);}
+
+  .stage-head h2{margin:0;font-size:1.15rem;}
+  .stage-head .sub{color:var(--muted);font-size:0.85rem;margin-top:2px;direction:rtl;}
+  .stage-progress{font-size:0.85rem;color:var(--muted);flex:none;margin-right:6px;}
+  .chevron{transition:transform .25s;color:var(--muted);flex:none;}
+  .stage.expanded .chevron{transform:rotate(90deg);}
+
+  .stage-body{max-height:0;overflow:hidden;transition:max-height .4s ease;border-top:1px solid transparent;}
+  .stage.expanded .stage-body{border-top:1px solid var(--border);}
+  .stage-body-inner{padding:16px 20px 20px;}
+
+  .lead{color:var(--muted);font-size:0.92rem;margin:0 0 16px;line-height:1.6;}
+
+  /* sub tabs */
+  .subtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+  .subtab-btn{
+    background:var(--bg-alt);border:1px solid var(--border);color:var(--muted);
+    padding:7px 14px;border-radius:20px;font-size:0.8rem;cursor:pointer;font-weight:600;
+  }
+  .subtab-btn.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
+  .subpanel{display:none;}
+  .subpanel.active{display:block;}
+
+  /* milestones */
+  .skill-list{list-style:none;margin:0;padding:0;}
+  .skill-list li{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px dashed var(--border);}
+  .skill-list li:last-child{border-bottom:none;}
+  .skill-list input[type=checkbox]{margin-top:3px;width:16px;height:16px;accent-color:var(--accent);flex:none;cursor:pointer;}
+  .skill-list label{cursor:pointer;font-size:0.92rem;flex:1;}
+  .skill-list li.checked label{color:var(--muted);text-decoration:line-through;}
+
+  /* vocab */
+  .vocab-grid{display:grid;grid-template-columns:1fr;gap:10px;}
+  .vocab-card{
+    background:var(--bg-alt);border:1px solid var(--border);border-radius:10px;
+    padding:12px 14px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
+  }
+  .vocab-en{flex:1;}
+  .vocab-en .word{font-weight:700;font-size:0.98rem;}
+  .vocab-en .example{color:var(--muted);font-size:0.85rem;margin-top:3px;font-style:italic;}
+  .vocab-ar{direction:rtl;color:var(--accent);font-size:0.95rem;font-weight:600;white-space:nowrap;padding-top:1px;}
+
+  /* grammar */
+  .grammar-block{background:var(--bg-alt);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;}
+  .grammar-block h4{margin:0 0 6px;font-size:0.95rem;color:var(--text);}
+  .grammar-block p{margin:0 0 8px;color:var(--muted);font-size:0.88rem;line-height:1.55;}
+  .grammar-block .ex{background:var(--card);border-left:3px solid var(--accent);padding:8px 12px;border-radius:6px;font-size:0.88rem;margin-top:6px;}
+  .grammar-block .ex + .ex{margin-top:6px;}
+  .grammar-block .wrong{border-left-color:var(--rose);color:var(--muted);}
+
+  /* speaking drills */
+  .drill{background:var(--bg-alt);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;}
+  .drill .tag{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.5px;color:var(--accent);font-weight:700;margin-bottom:6px;display:block;}
+  .drill p{margin:0;font-size:0.92rem;line-height:1.55;}
+  .drill .prompt{color:var(--text);font-weight:600;margin-bottom:6px;}
+  .drill .hint{color:var(--muted);font-size:0.85rem;}
+
+  .resources{background:var(--bg-alt);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:0.85rem;color:var(--muted);}
+  .resources strong{color:var(--text);}
+  .resources ul{margin:6px 0 0;padding-left:18px;}
+  .resources li{margin-bottom:6px;}
+  .resources a{color:var(--accent);text-decoration:none;font-weight:600;}
+  .resources a:hover{text-decoration:underline;}
+
+  /* quiz */
+  .quiz-q{background:var(--bg-alt);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:12px;}
+  .quiz-q .qtext{font-weight:600;font-size:0.92rem;margin-bottom:10px;}
+  .quiz-opts{display:flex;flex-direction:column;gap:6px;}
+  .quiz-opt{
+    background:var(--card);border:1px solid var(--border);border-radius:8px;
+    padding:8px 12px;font-size:0.87rem;cursor:pointer;text-align:left;color:var(--text);
+  }
+  .quiz-opt:hover{border-color:var(--accent);}
+  .quiz-opt.correct{background:var(--accent-dim);border-color:var(--accent);color:var(--accent);}
+  .quiz-opt.wrong{background:#3a1220;border-color:var(--rose);color:var(--rose);}
+  .quiz-opt.disabled{cursor:default;}
+  .quiz-feedback{margin-top:8px;font-size:0.83rem;color:var(--muted);min-height:1.2em;}
+  .quiz-score{
+    text-align:center;background:var(--bg-alt);border:1px solid var(--accent);border-radius:10px;
+    padding:14px;font-size:1rem;font-weight:700;color:var(--accent);margin-top:6px;
+  }
+  .quiz-retry{
+    display:block;margin:10px auto 0;background:none;border:1px solid var(--border);color:var(--muted);
+    padding:6px 14px;border-radius:8px;font-size:0.8rem;cursor:pointer;
+  }
+  .quiz-retry:hover{border-color:var(--accent);color:var(--accent);}
+
+  .reset-row{text-align:center;margin-top:24px;}
+  .reset-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:8px;font-size:0.8rem;cursor:pointer;}
+  .reset-btn:hover{border-color:var(--rose);color:var(--rose);}
+
+  @media (max-width:520px){
+    .stage-head{flex-wrap:wrap;}
+    .stage-progress{order:3;width:100%;margin-top:6px;margin-right:0;}
+    .vocab-card{flex-direction:column;}
+    .vocab-ar{align-self:flex-start;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>The Journey: B1 → C1</h1>
+    <div class="ar">رحلة اللغة الإنجليزية من المستوى المتوسط إلى المتقدم</div>
+  </header>
+
+  <div class="overall">
+    <div class="overall-top">
+      <span class="label">Overall progress</span>
+      <span class="pct" id="overallPct">0%</span>
+    </div>
+    <div class="rail"><div class="rail-fill" id="overallFill"></div></div>
+    <div class="rail-marks"><span>B1</span><span>B2</span><span>C1</span></div>
+  </div>
+
+  <!-- ================= B1 ================= -->
+  <div class="stage" data-level="b1" id="stage-b1">
+    <div class="stage-head" onclick="toggleStage('b1')">
+      <div class="dot"></div>
+      <div class="titles">
+        <span class="badge">Where you are</span>
+        <h2>B1 — Intermediate Foundation</h2>
+        <div class="sub">نقطة الانطلاق</div>
+      </div>
+      <span class="stage-progress" id="prog-b1">0/4</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="stage-body">
+      <div class="stage-body-inner">
+        <p class="lead">The goal here isn't more grammar rules — it's converting what you already know into things you say automatically, without translating from Arabic first.</p>
+
+        <div class="subtabs" data-stage="b1">
+          <button class="subtab-btn active" data-panel="milestones">Milestones</button>
+          <button class="subtab-btn" data-panel="vocab">Vocabulary</button>
+          <button class="subtab-btn" data-panel="grammar">Grammar</button>
+          <button class="subtab-btn" data-panel="speak">Speaking Drills</button>
+          <button class="subtab-btn" data-panel="extra">Extra</button>
+          <button class="subtab-btn" data-panel="quiz">Quiz</button>
+          <button class="subtab-btn" data-panel="links">Study Links</button>
+        </div>
+
+        <div class="subpanel active" data-panel="milestones">
+          <ul class="skill-list">
+            <li><input type="checkbox" id="b1-1"><label for="b1-1">Speak for 60 seconds on a familiar topic with no long pauses</label></li>
+            <li><input type="checkbox" id="b1-2"><label for="b1-2">Use past simple, present perfect, and future forms correctly in speech</label></li>
+            <li><input type="checkbox" id="b1-3"><label for="b1-3">Understand native-speed audio on familiar topics without subtitles</label></li>
+            <li><input type="checkbox" id="b1-4"><label for="b1-4">Hold a 5-minute conversation without switching to Arabic mid-sentence</label></li>
+          </ul>
+        </div>
+
+        <div class="subpanel" data-panel="vocab">
+          <div class="vocab-grid">
+            <div class="vocab-card"><div class="vocab-en"><span class="word">get used to (something)</span><div class="example">"I'm slowly getting used to teaching online."</div></div><div class="vocab-ar">أعتاد على</div></div>
+            <div class="vocab-card"><div class="vocab-en"><span class="word">take a break</span><div class="example">"Let's take a break before the next lesson."</div></div><div class="vocab-ar">يأخذ استراحة</div></div>
+            <div class="vocab-card"><div class="vocab-en"><span class="word">make progress</span><div class="example">"You've made real progress this month."</div></div><div class="vocab-ar">يحرز تقدماً</div></div>
+            <div class="vocab-card"><div class="vocab-en"><span class="word">deal with (a problem)</span><div class="example">"I'll deal with it after the meeting."</div></div><div class="vocab-ar">يتعامل مع</div></div>
+            <div class="vocab-card"><div class="vocab-en"><span class="word">come up with (an idea)</span><div class="example">"She came up with a great lesson plan."</div></div><div class="vocab-ar">يتوصل إلى فكرة</div></div>
+            <div class="vocab-card"><div class="vocab-en"><span class="word">figure out</span><div class="example">"I finally figured out how the app works."</div></div><div class="vocab-ar">يكتشف / يفهم</div></div>
+            <div class="vocab-card"><div class="vocab-en"><span class="word">in the end</span><div class="example">"In the end, we decided to reschedule."</div></div><div class="vocab-ar">في النهاية</div></div>
+            <div class="vocab-card"><div class="vocab-en"><span class="word">to be honest</span><div class="example">"To be honest, I found that test difficult."</div></div><div class="vocab-ar">بصراحة</div></div>
+          </div>
+        </div>
+
+        <div class="subpanel" data-panel="grammar">
+          <div class="grammar-block">
+            <h4>Past simple vs. present perfect (in speech)</h4>
+            <p>Use past simple for a finished action at a specific time. Use present perfect when the time isn't mentioned, or the result matters now.</p>
+            <div class="ex">✅ "I finished the report yesterday." (specific time → past simple)</div>
+            <div class="ex">✅ "I've already finished the report." (result now → present perfect)</div>
+            <div class="ex wrong">🚫 "I have finished it yesterday." — don't mix a finished-time word with present perfect.</div>
+          </div>
+          <div class="grammar-block">
+            <h4>Future forms: will vs. going to</h4>
+            <p>"Going to" = a plan you already made. "Will" = a decision made right now, or a prediction.</p>
+            <div class="ex">✅ "I'm going to visit my parents this weekend." (already planned)</div>
+            <div class="ex">✅ "I think I'll call her later." (decided in the moment)</div>
+          </div>
+          <div class="grammar-block">
+            <h4>Basic linking words for flow</h4>
+            <p>Instead of stacking short sentences with "and... and... and", connect ideas with: because, so, although, but, when.</p>
+            <div class="ex">✅ "I was tired, so I went to bed early, although I still had work to finish."</div>
+          </div>
+        </div>
+
+        <div class="subpanel" data-panel="speak">
+          <div class="drill">
+            <span class="tag">Warm-up</span>
+            <p class="prompt">Describe your typical school day, start to finish.</p>
+            <p class="hint">Aim for 60 seconds. Use at least 3 time-linking words: first, then, after that, finally.</p>
+          </div>
+          <div class="drill">
+            <span class="tag">Past experience</span>
+            <p class="prompt">Tell me about a lesson that didn't go as planned.</p>
+            <p class="hint">Use past simple for what happened, present perfect for the lasting effect: "Since then, I've always..."</p>
+          </div>
+          <div class="drill">
+            <span class="tag">Opinion</span>
+            <p class="prompt">Do you prefer teaching math or science? Why?</p>
+            <p class="hint">Give one reason, one example, one small contrast ("but on the other hand...").</p>
+          </div>
+        </div>
+
+        <div class="subpanel" data-panel="extra">
+          <div class="grammar-block">
+            <h4>Common mistakes at this level</h4>
+            <div class="ex wrong">🚫 "I am agree with you." → ✅ "I agree with you." (agree is a verb, not an adjective)</div>
+            <div class="ex wrong">🚫 "She explained me the lesson." → ✅ "She explained the lesson to me."</div>
+            <div class="ex wrong">🚫 "I have 25 years." → ✅ "I am 25 years old."</div>
+          </div>
+          <div class="grammar-block">
+            <h4>Filler phrases to sound more natural</h4>
+            <p>Native speakers rarely speak in perfect, unbroken sentences. These small fillers buy you thinking time without long silences.</p>
+            <div class="ex">"Well, let me think..." · "Actually, you know what..." · "I mean, basically..."</div>
+          </div>
+          <div class="grammar-block">
+            <h4>Quick self-check</h4>
+            <p>Record yourself doing one Speaking Drill above. Play it back and count: how many times did you pause for more than 3 seconds? That number should shrink week by week.</p>
+          </div>
+        </div>
+
+        <div class="subpanel" data-panel="quiz" data-quiz-level="b1">
+          <div class="quiz-container" id="quiz-b1"></div>
+        </div>
+
+        <div class="subpanel" data-panel="links">
+          <div class="resources">
+            <strong>Study material:</strong>
+            <ul>
+              <li><a href="https://learnenglish.britishcouncil.org/skills/listening/intermediate-b1" target="_blank" rel="noopener">British Council — Listening practice (B1)</a></li>
+              <li><a href="https://www.bbc.co.uk/learningenglish/english/features/6-minute-english" target="_blank" rel="noopener">BBC Learning English — 6 Minute English</a></li>
+              <li><a href="https://www.bbc.co.uk/learningenglish/english/course/lower-intermediate" target="_blank" rel="noopener">BBC Learning English — Lower-Intermediate course</a></li>
+              <li><a href="https://www.italki.com/en" target="_blank" rel="noopener">iTalki</a> — book conversation practice</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= B2 ================= -->
+  <div class="stage" data-level="b2" id="stage-b2">
+    <div class="stage-head" onclick="toggleStage('b2')">
+      <div class="dot"></div>
+      <div class="titles">
+        <span class="badge">The Bridge</span>
+        <h2>B2 — Upper-Intermediate Strategy</h2>
+        <div class="sub">مرحلة الجسر</div>
+      </div>
+      <span class="stage-progress" id="prog-b2">0/5</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="stage-body">
+      <div class="stage-body-inner">
+        <p class="lead">B2 is about register control — knowing when a phrase fits and when it sounds stiff — and losing the need to translate from Arabic before you speak.</p>
+
+        <div class="subtabs" data-stage="b2">
+          <button class="subtab-btn active" data-panel="milestones">Milestones</button>
+          <button class="subtab-btn" data-panel="vocab">Vocabulary</button>
+          <button class="subtab-btn" data-panel="grammar">Grammar</button>
+          <button class="subtab-btn" data-panel="speak">Speaking Drills</button>
+          <button class="subtab-btn" data-panel="extra">Extra</button>
+          <button class="subtab-btn" data-panel="quiz">Quiz</button>
+          <button class="subtab-btn" data-panel="links">Study Links</button>
+        </div>
+
+        <div class="subpanel active" data-panel="milestones">
+          <ul class="skill-list">
+            <li><input type="checkbox" id="b2-1"><label for="b2-1">Use linking language naturally (nevertheless, whereas, given that) without sounding scripted</label></li>
+            <li><input type="checkbox" id="b2-2"><label for="b2-2">Switch register mid-conversation (casual with friends → formal in a meeting)</label></li>
+            <li><input type="checkbox" id="b2-3"><label for="b2-3">Master passive voice, all conditionals, and perfect tenses in spontaneous speech</label></li>
+            <li><input type="checkbox" id="b2-4"><label for="b2-4">Watch a full episode in English-only subtitles and follow the plot without rewinding</label></li>
+            <li><input type="checkbox" id="b2-5"><label for="b2-5">Write a structured paragraph (claim → evidence → conclusion) in under 10 minutes</label></li>
+          </ul>
+        </div>
+
+        <div class="subpanel" data-panel="vocab">
+          <div class="vocab-grid">
+            <div class="vocab-card"><div class="vocab-en"><span class="word">nevertheless</span><div class="example">"The lesson was hard. Nevertheless, most students passed."</div></div><div class="vocab-ar">مع ذلك</div></div>
+            <div class="vocab-card"><div class="vocab-en"><span class="word">whereas</span><div class="example">"Grade 3 loves group work, whereas Grade 5 prefers working alone."</div></div><div class="vocab-ar">في حين أن</div></div>
+            <div class="vocab-card"><div class="vocab-en"><span class="word">given that</span><div class="example">"Given that it's a public holiday, we'll reschedule the test."</div></div><div class="vocab-ar">بالنظر إلى أن</div></div>
+            <div class="vocab-card"><div class="vocab-en"><span class="word">in light of</span><div class="example">"In light of the results, we changed the curriculum."</div></div><div class="vocab-ar">في ضوء</div></div>
+            <div class="vocab-card"><div class="vocab-en"><span class="word">to a certain extent</span><div class="example">"I agree, to a certain extent, but not fully."</div></div><div class="vocab-ar">إلى حد ما</div></div>
+            <div class="vocab-card"><div class="vocab-en"><span class="word">bring something up</span><div class="example">"I'll bring it up in tomorrow's meeting."</div></div><div class="vocab-ar">يطرح موضوعاً</div></div>
+            <div class="vocab-card"><div class="vocab-en"><span class="word">weigh up (options)</span><div class="example">"We need to weigh up both offers before deciding."</div></div><div class="vocab-ar">يوازن بين الخيارات</div></div>
+            <div class="vocab-card"><div class="vocab-en"><span class="word">on the whole</span><div class="example">"On the whole, the interview went well."</div></div><div class="vocab-ar">بشكل عام</div></div>
+          </div>
+        </div>
+
+        <div class="subpanel" data-panel="grammar">
+          <div class="grammar-block">
+            <h4>All three conditionals in conversation</h4>
+            <p>1st (real future), 2nd (unreal present), 3rd (unreal past) — natives mix these fluidly when speaking.</p>
+            <div class="ex">✅ 1st: "If I get the job, I'll move schools." (likely)</div>
+            <div class="ex">✅ 2nd: "If I were the principal, I'd change the schedule." (hypothetical)</div>
+            <div class="ex">✅ 3rd: "If I had known about the interview earlier, I would have prepared more." (past, unreal)</div>
+          </div>
+          <div class="grammar-block">
+            <h4>Passive voice for formal/neutral tone</h4>
+            <p>Use passive when the action matters more than who did it — common in reports and professional speech.</p>
+            <div class="ex">✅ "The exams were graded last week." (not: "I graded the exams")</div>
+            <div class="ex">✅ "New guidelines have been introduced this term."</div>
+          </div>
+          <div class="grammar-block">
+            <h4>Register shifting mid-conversation</h4>
+            <p>Same idea, different register. Recognize both and practice switching on cue.</p>
+            <div class="ex">Casual: "Can you send me that file?"</div>
+            <div class="ex">Formal: "Would you be able to share that file with me, please?"</div>
+          </div>
+        </div>
+
+        <div class="subpanel" data-panel="speak">
+          <div class="drill">
+            <span class="tag">Register switch</span>
+            <p class="prompt">Explain the same classroom problem twice: once to a close colleague, once to the school principal.</p>
+            <p class="hint">Notice which words change — not the facts, just the tone and structure.</p>
+          </div>
+          <div class="drill">
+            <span class="tag">Conditional practice</span>
+            <p class="prompt">If you were offered a job at an international school abroad tomorrow, what would you do?</p>
+            <p class="hint">Use 2nd conditional throughout: "If I were offered..., I would..."</p>
+          </div>
+          <div class="drill">
+            <span class="tag">Structured opinion</span>
+            <p class="prompt">Should homework be given every day? Argue one side, then acknowledge the other with "whereas" or "nevertheless."</p>
+            <p class="hint">Claim → one piece of evidence → one contrasting point → conclusion, under 2 minutes.</p>
+          </div>
+        </div>
+
+        <div class="subpanel" data-panel="extra">
+          <div class="grammar-block">
+            <h4>Common mistakes at this level</h4>
+            <div class="ex wrong">🚫 "I'm agree that it's a good idea, despite of the cost." → ✅ "I agree that it's a good idea, despite the cost."</div>
+            <div class="ex wrong">🚫 "It depends of the situation." → ✅ "It depends on the situation."</div>
+            <div class="ex wrong">🚫 "I look forward to hear from you." → ✅ "I look forward to hearing from you." (gerund after "to" here)</div>
+          </div>
+          <div class="grammar-block">
+            <h4>Softening disagreement (a B2 register skill)</h4>
+            <p>At B1 you might just say "no, that's wrong." At B2, disagreement is softened without losing the point.</p>
+            <div class="ex">"I see your point, but I'd argue that..." · "That's fair, although I think..."</div>
+          </div>
+          <div class="grammar-block">
+            <h4>Quick self-check</h4>
+            <p>Take one Speaking Drill above and redo it twice: once assuming you're talking to a friend, once assuming a school inspector is listening. If both versions sound identical, that's the register gap to close next.</p>
+          </div>
+        </div>
+
+        <div class="subpanel" data-panel="quiz" data-quiz-level="b2">
+          <div class="quiz-container" id="quiz-b2"></div>
+        </div>
+
+        <div class="subpanel" data-panel="links">
+          <div class="resources">
+            <strong>Study material:</strong>
+            <ul>
+              <li><a href="https://www.bbc.co.uk/learningenglish/english/course/upper-intermediate" target="_blank" rel="noopener">BBC Learning English — Upper-Intermediate course</a></li>
+              <li><a href="https://www.ted.com/talks?language=en" target="_blank" rel="noopener">TED Talks</a> — English subtitles, note new linking phrases</li>
+              <li><a href="https://learnenglish.britishcouncil.org/skills/listening/upper-intermediate-b2" target="_blank" rel="noopener">British Council — Listening practice (B2)</a></li>
+              <li><a href="https://apps.ankiweb.net/" target="_blank" rel="noopener">Anki</a> — spaced repetition for collocations and register shifts</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= C1 ================= -->
+  <div class="stage" data-level="c1" id="stage-c1">
+    <div class="stage-head" onclick="toggleStage('c1')">
+      <div class="dot"></div>
+      <div class="titles">
+        <span class="badge">Target level</span>
+        <h2>C1 — Advanced Fluency</h2>
+        <div class="sub">الهدف النهائي</div>
+      </div>
+      <span class="stage-progress" id="prog-c1">0/5</span>
+      <span class="chevron">▶</span>
+    </div>
+    <div class="stage-body">
+      <div class="stage-body-inner">
+        <p class="lead">Measured in months of sustained use, not weeks. The focus shifts from correctness to nuance — implicit meaning, tone control, and speaking without visibly searching for words.</p>
+
+        <div class="subtabs" data-stage="c1">
+          <button class="subtab-btn active" data-panel="milestones">Milestones</button>
+          <button class="subtab-btn" data-panel="vocab">Vocabulary</button>
+          <button class="subtab-btn" data-panel="grammar">Grammar</button>
+          <button class="subtab-btn" data-panel="speak">Speaking Drills</button>
+          <button class="subtab-btn" data-panel="extra">Extra</button>
+          <button class="subtab-btn" data-panel="quiz">Quiz</button>
+          <button class="subtab-btn" data-panel="links">Study Links</button>
+        </div>
+
+        <div class="subpanel active" data-panel="milestones">
+          <ul class="skill-list">
+            <li><input type="checkbox" id="c1-1"><label for="c1-1">Understand humor, sarcasm, and implied meaning without it being explained</label></li>
+            <li><input type="checkbox" id="c1-2"><label for="c1-2">Give an unprepared 3-minute opinion on a professional topic, well-structured</label></li>
+            <li><input type="checkbox" id="c1-3"><label for="c1-3">Write a polished report or essay with minimal self-correction</label></li>
+            <li><input type="checkbox" id="c1-4"><label for="c1-4">Follow fast native-to-native conversation (not addressed to you) with only occasional gaps</label></li>
+            <li><input type="checkbox" id="c1-5"><label for="c1-5">Adjust tone and vocabulary instantly for classroom, interview, and casual contexts</label></li>
+          </ul>
+        </div>
+
+        <div class="subpanel" data-panel="vocab">
+          <div class="vocab-grid">
+            <div class="vocab-card"><div class="vocab-en"><span class="word">to play devil's advocate</span><div class="example">"Just to play devil's advocate, what if the plan fails?"</div></div><div class="vocab-ar">يجادل بالعكس لغرض النقاش</div></div>
+            <div class="vocab-card"><div class="vocab-en"><span class="word">it goes without saying</span><div class="example">"It goes without saying that safety comes first."</div></div><div class="vocab-ar">غني عن القول</div></div>
+            <div class="vocab-card"><div class="vocab-en"><span class="word">to touch on (a topic)</span><div class="example">"I'll just touch on the budget briefly."</div></div><div class="vocab-ar">يتطرق إلى</div></div>
+            <div class="vocab-card"><div class="vocab-en"><span class="word">by and large</span><div class="example">"By and large, the new curriculum has worked well."</div></div><div class="vocab-ar">بشكل عام</div></div>
+            <div class="vocab-card"><div class="vocab-en"><span class="word">a double-edged sword</span><div class="example">"Technology in class is a double-edged sword."</div></div><div class="vocab-ar">سيف ذو حدين</div></div>
+            <div class="vocab-card"><div class="vocab-en"><span class="word">to read between the lines</span><div class="example">"Reading between the lines, she wasn't happy with the decision."</div></div><div class="vocab-ar">يقرأ ما بين السطور</div></div>
+            <div class="vocab-card"><div class="vocab-en"><span class="word">a rule of thumb</span><div class="example">"As a rule of thumb, keep instructions under two sentences."</div></div><div class="vocab-ar">قاعدة عامة</div></div>
+            <div class="vocab-card"><div class="vocab-en"><span class="word">to hedge (your bets/statement)</span><div class="example">"I'd hedge a little here — the data isn't fully conclusive."</div></div><div class="vocab-ar">يتحفظ في التصريح</div></div>
+          </div>
+        </div>
+
+        <div class="subpanel" data-panel="grammar">
+          <div class="grammar-block">
+            <h4>Inversion for emphasis (formal speech)</h4>
+            <p>Flipping subject/verb order after negative or limiting expressions adds emphasis, common in advanced speech and writing.</p>
+            <div class="ex">✅ "Never have I seen such a well-organized classroom."</div>
+            <div class="ex">✅ "Not only did she pass, but she also scored the highest in the class."</div>
+          </div>
+          <div class="grammar-block">
+            <h4>Cleft sentences to control focus</h4>
+            <p>Split a sentence to highlight exactly what matters — very common in nuanced spoken English.</p>
+            <div class="ex">✅ "What really surprised me was how quickly they adapted." (instead of: "They adapted quickly, which surprised me")</div>
+            <div class="ex">✅ "It's the lack of preparation that concerns me most."</div>
+          </div>
+          <div class="grammar-block">
+            <h4>Hedging language for nuance</h4>
+            <p>Native speakers rarely state opinions as flat facts — they soften claims to sound careful, not weak.</p>
+            <div class="ex">✅ "It could be argued that the test was too long."</div>
+            <div class="ex">✅ "There's a case to be made for shorter school days."</div>
+          </div>
+        </div>
+
+        <div class="subpanel" data-panel="speak">
+          <div class="drill">
+            <span class="tag">Implicit meaning</span>
+            <p class="prompt">Listen to a native podcast clip and explain what the speaker implied but didn't say directly.</p>
+            <p class="hint">Focus on tone, hesitation, and word choice — not just the literal words.</p>
+          </div>
+          <div class="drill">
+            <span class="tag">Unprepared opinion</span>
+            <p class="prompt">Should international schools standardize curricula across countries? You have 30 seconds to prepare, then speak for 3 minutes.</p>
+            <p class="hint">Use at least one hedge, one cleft sentence, and one piece of inversion for emphasis.</p>
+          </div>
+          <div class="drill">
+            <span class="tag">Tone switching</span>
+            <p class="prompt">Explain a scheduling conflict: first as a light joke to a friend, then as a serious concern to your school director.</p>
+            <p class="hint">Same facts, completely different tone — this is the C1 skill that matters most.</p>
+          </div>
+        </div>
+
+        <div class="subpanel" data-panel="extra">
+          <div class="grammar-block">
+            <h4>Common mistakes even at this level</h4>
+            <div class="ex wrong">🚫 "Despite of the criticism, the policy stayed." → ✅ "Despite the criticism, the policy stayed."</div>
+            <div class="ex wrong">🚫 "It was such a good idea that few people expected it to fail so it did." (run-on) → ✅ Break into two clean clauses; even advanced speakers over-pack sentences under pressure.</div>
+            <div class="ex wrong">🚫 Overusing "very" (very good, very important) → ✅ Replace with precise words: outstanding, crucial, essential.</div>
+          </div>
+          <div class="grammar-block">
+            <h4>Signaling nuance without over-explaining</h4>
+            <p>At C1, you can trust the listener to infer — you don't need to spell out every implication.</p>
+            <div class="ex">"Let's just say the meeting didn't go as planned." (implies more without stating it)</div>
+            <div class="ex">"I'll leave that one there." (signals you're choosing not to elaborate, deliberately)</div>
+          </div>
+          <div class="grammar-block">
+            <h4>Quick self-check</h4>
+            <p>Pick a recent conversation in Arabic where you made a subtle point through tone rather than words. Try to recreate that exact effect in English — that gap is the real C1 target, not vocabulary size.</p>
+          </div>
+        </div>
+
+        <div class="subpanel" data-panel="quiz" data-quiz-level="c1">
+          <div class="quiz-container" id="quiz-c1"></div>
+        </div>
+
+        <div class="subpanel" data-panel="links">
+          <div class="resources">
+            <strong>Study material:</strong>
+            <ul>
+              <li><a href="https://www.bbc.co.uk/learningenglish/english/course/advanced" target="_blank" rel="noopener">BBC Learning English — Advanced course</a></li>
+              <li><a href="https://learnenglish.britishcouncil.org/skills/listening/advanced-c1" target="_blank" rel="noopener">British Council — Listening practice (C1)</a></li>
+              <li><a href="https://www.bbc.co.uk/sounds" target="_blank" rel="noopener">BBC Sounds</a> — unscripted native-to-native podcasts</li>
+              <li><a href="https://www.italki.com/en" target="_blank" rel="noopener">iTalki</a> — tutors for nuance/tone correction</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="reset-row">
+    <button class="reset-btn" onclick="resetProgress()">Reset progress</button>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'journey_b1_c1_progress';
+const stageIds = {
+  b1: ['b1-1','b1-2','b1-3','b1-4'],
+  b2: ['b2-1','b2-2','b2-3','b2-4','b2-5'],
+  c1: ['c1-1','c1-2','c1-3','c1-4','c1-5']
+};
+
+function loadState(){
+  try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : {}; }
+  catch(e){ return {}; }
+}
+function saveState(state){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){} }
+
+let state = loadState();
+
+function applyState(){
+  Object.keys(stageIds).forEach(level=>{
+    stageIds[level].forEach(id=>{
+      const cb = document.getElementById(id);
+      const checked = !!state[id];
+      cb.checked = checked;
+      cb.closest('li').classList.toggle('checked', checked);
+    });
+    updateStageProgress(level);
+  });
+  updateOverall();
+}
+
+function updateStageProgress(level){
+  const ids = stageIds[level];
+  const done = ids.filter(id=>state[id]).length;
+  document.getElementById('prog-'+level).textContent = done+'/'+ids.length;
+  document.getElementById('stage-'+level).classList.toggle('complete', done===ids.length);
+}
+
+function updateOverall(){
+  const all = [...stageIds.b1, ...stageIds.b2, ...stageIds.c1];
+  const done = all.filter(id=>state[id]).length;
+  const pct = Math.round((done/all.length)*100);
+  document.getElementById('overallPct').textContent = pct+'%';
+  document.getElementById('overallFill').style.width = pct+'%';
+}
+
+document.querySelectorAll('.skill-list input[type=checkbox]').forEach(cb=>{
+  cb.addEventListener('change', ()=>{
+    state[cb.id] = cb.checked;
+    cb.closest('li').classList.toggle('checked', cb.checked);
+    saveState(state);
+    const level = cb.id.split('-')[0];
+    updateStageProgress(level);
+    updateOverall();
+  });
+});
+
+function toggleStage(level){
+  const stageEl = document.getElementById('stage-'+level);
+  const body = stageEl.querySelector('.stage-body');
+  const isExpanded = stageEl.classList.contains('expanded');
+  document.querySelectorAll('.stage').forEach(s=>{
+    s.classList.remove('expanded');
+    s.querySelector('.stage-body').style.maxHeight = null;
+  });
+  if(!isExpanded){
+    stageEl.classList.add('expanded');
+    // allow content to lay out before measuring
+    requestAnimationFrame(()=>{ body.style.maxHeight = body.scrollHeight + 'px'; });
+  }
+}
+
+// sub-tab switching within each stage
+document.querySelectorAll('.subtabs').forEach(tabGroup=>{
+  const stageLevel = tabGroup.dataset.stage;
+  const stageBody = document.getElementById('stage-'+stageLevel).querySelector('.stage-body');
+  tabGroup.querySelectorAll('.subtab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const panelName = btn.dataset.panel;
+      const container = tabGroup.parentElement;
+      tabGroup.querySelectorAll('.subtab-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      container.querySelectorAll('.subpanel').forEach(p=>p.classList.remove('active'));
+      container.querySelector('.subpanel[data-panel="'+panelName+'"]').classList.add('active');
+      // recalc height since panel content differs
+      requestAnimationFrame(()=>{ stageBody.style.maxHeight = stageBody.scrollHeight + 'px'; });
+    });
+  });
+});
+
+function resetProgress(){
+  if(!confirm('Reset all checked progress? This cannot be undone.')) return;
+  state = {};
+  saveState(state);
+  applyState();
+}
+
+const quizData = {
+  b1: [
+    { q:"I ___ used to teaching online now.", opts:["am getting","get","got getting","have get"], correct:0 },
+    { q:"She ___ me the lesson yesterday.", opts:["explained","explained to","has explained","explains"], correct:0, note:"Correct full form: 'explained the lesson to me.'" },
+    { q:"Choose the natural sentence:", opts:["I am agree with you.","I agree with you.","I do agree of you.","I'm agreeing you."], correct:1 },
+    { q:"\"I've already finished the report\" is used because:", opts:["The time is specific (yesterday)","The result matters right now","It's a future plan","It's a repeated habit"], correct:1 },
+    { q:"Which fits: \"___, I found that test difficult.\"", opts:["To be honest","Being honest","For honest","Honest to say"], correct:0 }
+  ],
+  b2: [
+    { q:"\"The lesson was hard. ___, most students passed.\"", opts:["Whereas","Nevertheless","Given that","Depends of"], correct:1 },
+    { q:"Which is 2nd conditional (hypothetical present)?", opts:["If I get the job, I'll move.","If I were the principal, I'd change the schedule.","If I had known, I would have prepared.","If I get the job, I moved."], correct:1 },
+    { q:"Correct passive voice:", opts:["I graded the exams last week.","The exams were graded last week.","The exams graded last week.","The exams have grade last week."], correct:1 },
+    { q:"Fix this: \"It depends of the situation.\"", opts:["It depends of the situation.","It depends about the situation.","It depends on the situation.","It depend on situation."], correct:2 },
+    { q:"Most formal version of \"Can you send me that file?\"", opts:["Send me the file.","Could you send the file?","Would you be able to share that file with me, please?","Give file please."], correct:2 }
+  ],
+  c1: [
+    { q:"Which shows inversion for emphasis?", opts:["I have never seen this before.","Never have I seen such a well-organized classroom.","I never saw this classroom.","This classroom, I never saw."], correct:1 },
+    { q:"Cleft sentence for focus:", opts:["They adapted quickly, which surprised me.","What really surprised me was how quickly they adapted.","They adapted quickly and it surprised me.","Surprising was how they adapted."], correct:1 },
+    { q:"Best hedge for a careful opinion:", opts:["It is true that the test was too long.","The test was too long, period.","It could be argued that the test was too long.","Everyone knows the test was too long."], correct:2 },
+    { q:"Fix: \"Despite of the criticism, the policy stayed.\"", opts:["Despite of the criticism...","Despite the criticism...","Although of the criticism...","In despite the criticism..."], correct:1 },
+    { q:"\"I'll leave that one there\" signals:", opts:["The speaker forgot the topic","The speaker is choosing not to elaborate further, deliberately","The speaker disagrees strongly","The speaker wants to end the conversation"], correct:1 }
+  ]
+};
+
+function renderQuiz(level){
+  const container = document.getElementById('quiz-'+level);
+  if(!container || container.dataset.rendered) return;
+  container.dataset.rendered = 'true';
+  const questions = quizData[level];
+  let score = 0;
+  let answered = 0;
+
+  questions.forEach((item, qIdx)=>{
+    const qBlock = document.createElement('div');
+    qBlock.className = 'quiz-q';
+    const qText = document.createElement('div');
+    qText.className = 'qtext';
+    qText.textContent = (qIdx+1)+'. '+item.q;
+    qBlock.appendChild(qText);
+
+    const optsWrap = document.createElement('div');
+    optsWrap.className = 'quiz-opts';
+    const feedback = document.createElement('div');
+    feedback.className = 'quiz-feedback';
+
+    item.opts.forEach((optText, optIdx)=>{
+      const btn = document.createElement('button');
+      btn.className = 'quiz-opt';
+      btn.textContent = optText;
+      btn.addEventListener('click', ()=>{
+        if(optsWrap.dataset.locked) return;
+        optsWrap.dataset.locked = 'true';
+        answered++;
+        const buttons = optsWrap.querySelectorAll('.quiz-opt');
+        buttons.forEach((b,i)=>{
+          b.classList.add('disabled');
+          if(i===item.correct) b.classList.add('correct');
+        });
+        if(optIdx===item.correct){
+          score++;
+          feedback.textContent = 'Correct!' + (item.note ? ' '+item.note : '');
+        } else {
+          btn.classList.add('wrong');
+          feedback.textContent = 'Not quite. ' + (item.note || 'Check the highlighted answer.');
+        }
+        if(answered===questions.length){
+          showScore(level, score, questions.length);
+        }
+      });
+      optsWrap.appendChild(btn);
+    });
+
+    qBlock.appendChild(optsWrap);
+    qBlock.appendChild(feedback);
+    container.appendChild(qBlock);
+  });
+}
+
+function showScore(level, score, total){
+  const container = document.getElementById('quiz-'+level);
+  const scoreBox = document.createElement('div');
+  scoreBox.className = 'quiz-score';
+  scoreBox.textContent = 'Score: '+score+' / '+total;
+  container.appendChild(scoreBox);
+  const retryBtn = document.createElement('button');
+  retryBtn.className = 'quiz-retry';
+  retryBtn.textContent = 'Retry quiz';
+  retryBtn.onclick = ()=>{
+    container.innerHTML = '';
+    container.dataset.rendered = '';
+    renderQuiz(level);
+  };
+  container.appendChild(retryBtn);
+}
+
+// render quiz lazily when its tab is opened
+document.querySelectorAll('.subtab-btn[data-panel="quiz"]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const stageLevel = btn.closest('.subtabs').dataset.stage;
+    renderQuiz(stageLevel);
+  });
+});
+
+applyState();
+toggleStage('b2');
+</script>
+</body>
+</html>

@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B1→C1 Bilingual Conversation Progression</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { font-size: 28px; margin-bottom: 8px; }
+        .subtitle { color: #666; font-size: 14px; }
+        
+        .mode-toggle { display: flex; gap: 12px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap; }
+        .mode-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            background: white;
+            border: 1px solid #ddd;
+        }
+        .mode-btn.active {
+            background: #378add;
+            color: white;
+            border-color: #378add;
+        }
+        
+        .mode-btn:hover { transform: translateY(-2px); }
+        
+        /* Study Mode */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+        .cat-btn {
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .cat-btn:hover { border-color: #378add; background: #f0f7ff; }
+        .cat-btn.active { background: #378add; color: white; border-color: #378add; }
+        
+        .cards-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .context { font-size: 12px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+        
+        .level-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .level-btn {
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .level-btn.active {
+            background: #378add;
+            color: white;
+            border-color: #378add;
+        }
+        
+        .sentence-display {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .sentence-en {
+            font-size: 15px;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .sentence-ar {
+            font-size: 15px;
+            color: #666;
+            text-align: right;
+            direction: rtl;
+            line-height: 1.8;
+        }
+        
+        .notes { font-size: 13px; color: #666; font-style: italic; }
+        .audio-btn {
+            background: #e8f4fd;
+            color: #378add;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-top: 8px;
+            transition: all 0.2s;
+        }
+        .audio-btn:hover { background: #d0e8fa; }
+        
+        /* Flashcard Mode */
+        .flashcard-container { max-width: 600px; margin: 0 auto; }
+        .flashcard {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .flashcard:hover { transform: translateY(-4px); }
+        .flashcard.flipped { background: #f0f7ff; }
+        
+        .card-context { font-size: 12px; color: #999; margin-bottom: 8px; text-transform: uppercase; }
+        .card-label { font-size: 13px; color: #666; margin-bottom: 16px; }
+        .card-text {
+            font-size: 18px;
+            font-weight: 500;
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        .card-text.arabic {
+            font-size: 16px;
+            direction: rtl;
+            text-align: right;
+        }
+        .flip-hint { font-size: 11px; color: #ccc; margin-top: 16px; }
+        
+        .rating-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .rating-btn {
+            padding: 10px 16px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .rating-btn:hover { border-color: #378add; }
+        .rating-btn.easy { border-color: #10b981; color: #10b981; }
+        .rating-btn.good { border-color: #378add; color: #378add; }
+        .rating-btn.hard { border-color: #ef4444; color: #ef4444; }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #378add;
+            transition: width 0.3s;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        .stat-label { font-size: 12px; color: #666; }
+        .stat-value { font-size: 20px; font-weight: 600; color: #378add; }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            body { background: #1a1a1a; color: #e0e0e0; }
+            .card, .flashcard, .stat-card { background: #2a2a2a; border-color: #444; }
+            .sentence-display { background: #333; }
+            .sentence-en { color: #e0e0e0; }
+            .sentence-ar { color: #b0b0b0; }
+            .cat-btn { background: #2a2a2a; border-color: #444; color: #e0e0e0; }
+            .cat-btn.active { background: #378add; border-color: #378add; }
+            .cat-btn:hover { background: #333; border-color: #378add; }
+            .level-btn { background: #2a2a2a; border-color: #444; color: #e0e0e0; }
+            .level-btn.active { background: #378add; border-color: #378add; }
+            .mode-btn { background: #2a2a2a; border-color: #444; color: #e0e0e0; }
+            .mode-btn.active { background: #378add; border-color: #378add; }
+            .flashcard { background: #2a2a2a; }
+            .flashcard.flipped { background: #1f2937; }
+            .card-text { color: #e0e0e0; }
+            .rating-btn { background: #2a2a2a; border-color: #444; color: #e0e0e0; }
+            .progress-bar { background: #444; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🗣️ B1→C1 Bilingual Conversation</h1>
+            <p class="subtitle">English + Arabic | Study Mode • Flashcard Mode • Spaced Repetition</p>
+        </header>
+
+        <div class="mode-toggle">
+            <button class="mode-btn active" onclick="switchMode('study')">📚 Study Mode</button>
+            <button class="mode-btn" onclick="switchMode('flashcard')">🎯 Flashcard Mode</button>
+        </div>
+
+        <!-- STUDY MODE -->
+        <div id="study-mode" class="mode-content">
+            <div class="category-grid" id="category-grid"></div>
+            <div class="cards-container" id="study-cards"></div>
+        </div>
+
+        <!-- FLASHCARD MODE -->
+        <div id="flashcard-mode" class="mode-content" style="display: none;">
+            <div class="stats" id="stats"></div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+            </div>
+            <div class="flashcard-container">
+                <div class="flashcard" id="flashcard" onclick="toggleFlip()">
+                    <div class="card-context" id="fc-context"></div>
+                    <div class="card-label" id="fc-label">Click to reveal</div>
+                    <div class="card-text" id="fc-text"></div>
+                </div>
+                <div class="rating-buttons">
+                    <button class="rating-btn hard" onclick="rateCard('hard')">❌ Hard (1d)</button>
+                    <button class="rating-btn good" onclick="rateCard('good')">👍 Good (3d)</button>
+                    <button class="rating-btn easy" onclick="rateCard('easy')">⭐ Easy (7d)</button>
+                </div>
+                <button class="mode-btn" onclick="initFlashcardMode()" style="width: 100%;">Next Card</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==== DATA ====
+        const conversationData = {
+            greeting: [
+                {
+                    context: "Meeting someone for the first time",
+                    b1: { en: "Hi, how are you?", ar: "مرحبا، كيف أنت؟" },
+                    b2: { en: "Hi, I'm so glad to meet you. How have you been?", ar: "مرحبا، أنا سعيد جداً بلقائك. كيف كنت؟" },
+                    b2plus: { en: "It's great to finally meet you. I've heard good things. How have you been getting on?", ar: "من الرائع أن ألتقيك أخيراً. سمعت أشياء جيدة عنك. كيف كنت تتصرف؟" },
+                    c1: { en: "It's a pleasure to finally make your acquaintance. How have you been faring?", ar: "إنه لشرف لي أن أتعرف عليك أخيراً. كيف حالك بشكل عام؟" },
+                    notes: "Shift from generic to personalized; add hedging and rapport."
+                }
+            ],
+            opinion: [
+                {
+                    context: "Sharing your view on a movie",
+                    b1: { en: "I think this movie is good. It is interesting.", ar: "أعتقد أن هذا الفيلم جيد. إنه مثير للاهتمام." },
+                    b2: { en: "I really enjoyed this movie. I found it quite interesting.", ar: "استمتعت كثيراً بهذا الفيلم. وجدته مثيراً للاهتمام تماماً." },
+                    b2plus: { en: "I found the film rather engaging, though I must say the pacing was uneven in places.", ar: "وجدت الفيلم جذاباً إلى حد ما، لكن يجب أن أقول إن السرعة كانت متفاوتة في بعض الأماكن." },
+                    c1: { en: "The film struck me as remarkably engaging, though admittedly the pacing faltered in the second act.", ar: "بدا لي الفيلم جذاباً بشكل ملحوظ، لكن يجب أن أعترف أن السرعة تعثرت في الفصل الثاني." },
+                    notes: "'Good' → 'engaging'; add qualification; use 'struck me as'."
+                },
+                {
+                    context: "Disagreeing politely with an idea",
+                    b1: { en: "I don't think that is right. I think we should do something else.", ar: "لا أعتقد أن هذا صحيح. أعتقد أننا يجب أن نفعل شيئاً آخر." },
+                    b2: { en: "I'm not sure I agree with that. Maybe we could consider another approach?", ar: "لست متأكداً من موافقتي على ذلك. ربما يمكننا أن نعتبر نهجاً آخر؟" },
+                    b2plus: { en: "While I take your point, I'm inclined to think we might benefit from exploring an alternative angle.", ar: "بينما أفهم وجهة نظرك، أنا أميل إلى الاعتقاد بأننا قد نستفيد من استكشاف زاوية بديلة." },
+                    c1: { en: "Whilst your perspective certainly has merit, I'd venture that we might prove better served by exploring a somewhat different trajectory.", ar: "بينما تحتوي وجهة نظرك على جدوى فعلاً، سأقترح أننا قد نستفيد بشكل أفضل من استكشاف مسار مختلف نسبياً." },
+                    notes: "'Take your point' = acknowledge before disagreeing."
+                }
+            ],
+            describe: [
+                {
+                    context: "Describing someone's personality",
+                    b1: { en: "She is nice. She is friendly and happy.", ar: "هي طيبة. إنها ودية وسعيدة." },
+                    b2: { en: "She's a pleasant person. She's very friendly and has a positive attitude.", ar: "إنها شخصية لطيفة. إنها ودية جداً وتتمتع بموقف إيجابي." },
+                    b2plus: { en: "She's remarkably affable—the sort of person who puts you instantly at ease with her warmth and good humor.", ar: "إنها ودية بشكل ملحوظ—نوع الشخص الذي يجعلك مرتاحاً على الفور بدفئها وروح الفكاهة الجيدة." },
+                    c1: { en: "She possesses a disarming affability, coupled with an almost infectious joie de vivre that readily sets others at ease.", ar: "تتمتع بود ساحر، مقترن بروح حياة معدية تجعل الآخرين مرتاحين بسهولة." },
+                    notes: "'Nice' → 'affable'; use fixed phrases; add abstract nouns."
+                },
+                {
+                    context: "Describing a place you visited",
+                    b1: { en: "The city is big and nice. There are many people.", ar: "المدينة كبيرة وجميلة. يوجد الكثير من الناس." },
+                    b2: { en: "The city is quite large and vibrant. It was bustling with activity.", ar: "المدينة كبيرة جداً وحيوية. كانت مزدحمة بالنشاط." },
+                    b2plus: { en: "The city struck me as a sprawling, vibrant metropolis—perpetually teeming with energy and cultural vitality.", ar: "بدت لي المدينة كعاصمة ممتدة وحيوية—دائماً مليئة بالطاقة والحيوية الثقافية." },
+                    c1: { en: "The city presented itself as a sprawling métropole, teeming with a palpable joie de vivre and an almost intoxicating cultural density.", ar: "قدمت نفسها المدينة كعاصمة ممتدة، مليئة بروح حياة ملموسة وكثافة ثقافية تقريباً مسكرة." },
+                    notes: "Move from simple to sophisticated; use abstractions."
+                }
+            ],
+            request: [
+                {
+                    context: "Asking someone to help with a task",
+                    b1: { en: "Can you help me? I need help with this.", ar: "هل يمكنك مساعدتي؟ أحتاج إلى المساعدة في هذا." },
+                    b2: { en: "Would you mind helping me with this? I'd really appreciate it.", ar: "هل تمانع مساعدتي في هذا؟ سأكون ممتناً حقاً." },
+                    b2plus: { en: "I wonder if you might be able to spare a moment to lend a hand with this?", ar: "أتساءل ما إذا كان بإمكانك أن تخصص قليلاً من الوقت لمساعدتي في هذا؟" },
+                    c1: { en: "Would you be inclined to afford me the benefit of your expertise on this particular matter?", ar: "هل ستميل إلى منحي فائدة خبرتك في هذه المسألة المحددة؟" },
+                    notes: "'Can you help' → formal, hedged request."
+                }
+            ],
+            disagree: [
+                {
+                    context: "Respectfully challenging a fact",
+                    b1: { en: "I don't think that is true. I think it is wrong.", ar: "لا أعتقد أن هذا صحيح. أعتقد أنه مخطئ." },
+                    b2: { en: "I'm not sure about that. I think there might be another perspective on this.", ar: "لست متأكداً من ذلك. أعتقد أنه قد تكون هناك وجهة نظر أخرى حول هذا." },
+                    b2plus: { en: "I beg to differ slightly. I believe the evidence might suggest a somewhat different conclusion.", ar: "أتجاسر على عدم الموافقة قليلاً. أعتقد أن الأدلة قد تشير إلى استنتاج مختلف نسبياً." },
+                    c1: { en: "I must respectfully take issue with that assertion. The preponderance of evidence would seem to suggest a rather more nuanced picture.", ar: "يجب أن أعترض بأدب على هذا الادعاء. يبدو أن وزن الأدلة يشير إلى صورة أكثر دقة بكثير." },
+                    notes: "'I don't think' → 'I beg to differ'; use formal phrasing."
+                }
+            ],
+            storytelling: [
+                {
+                    context: "Recounting a past experience",
+                    b1: { en: "I went to the park yesterday. It was fun.", ar: "ذهبت إلى الحديقة أمس. كان ممتعاً." },
+                    b2: { en: "I went to the park yesterday and had a great time. It was really enjoyable.", ar: "ذهبت إلى الحديقة أمس وقضيت وقتاً رائعاً. كان ممتعاً حقاً." },
+                    b2plus: { en: "I took a rather pleasant stroll through the park yesterday, where I found myself quite captivated by the natural beauty.", ar: "قمت بنزهة لطيفة جداً في الحديقة أمس، حيث وجدت نفسي مأسوراً تماماً بالجمال الطبيعي." },
+                    c1: { en: "I ventured into the park yesterday and found myself utterly captivated by the verdant landscape—a rather restorative interlude, I must say.", ar: "ذهبت إلى الحديقة أمس ووجدت نفسي مأسوراً تماماً بالمناظر الطبيعية الخضراء—استراحة منعشة جداً كما يجب أن أقول." },
+                    notes: "Shift from simple past to narrative flourish; add sensory detail."
+                }
+            ],
+            advice: [
+                {
+                    context: "Giving someone guidance",
+                    b1: { en: "You should do this. It is good.", ar: "يجب أن تفعل هذا. إنه جيد." },
+                    b2: { en: "I think you should try this. It's really helpful.", ar: "أعتقد أنه يجب أن تحاول هذا. إنه مفيد جداً." },
+                    b2plus: { en: "I would strongly encourage you to consider this approach. It has proven quite effective in similar situations.", ar: "أود أن أشجعك بقوة على النظر في هذا النهج. لقد ثبت فعاليته في حالات مشابهة." },
+                    c1: { en: "I would be remiss not to urge you to explore this avenue. The merits are, I dare say, rather considerable and well-documented.", ar: "سأكون مسيئاً إذا لم أحثك على استكشاف هذا المسار. الفضائل، كما أجرؤ على القول، كبيرة جداً وموثقة جيداً." },
+                    notes: "Move from imperative to diplomatic recommendation."
+                }
+            ],
+            complaint: [
+                {
+                    context: "Expressing dissatisfaction politely",
+                    b1: { en: "This is bad. I don't like it.", ar: "هذا سيء. لا أحبه." },
+                    b2: { en: "I'm not very satisfied with this. I expected better.", ar: "أنا غير راضٍ جداً عن هذا. كنت أتوقع ما هو أفضل." },
+                    b2plus: { en: "I must confess I'm somewhat disappointed with the quality here. One would have expected a rather higher standard.", ar: "يجب أن أعترف أنني مخيب الآمال إلى حد ما بالجودة هنا. كان يتوقع معيار أعلى." },
+                    c1: { en: "I feel compelled to express my considerable reservations regarding the caliber of this offering. The shortcomings, it seems to me, are rather pronounced.", ar: "أشعر بأنني مضطر للتعبير عن تحفظاتي الكبيرة بشأن مستوى هذا العرض. يبدو لي أن أوجه القصور واضحة جداً." },
+                    notes: "'Bad' → 'reservations'; add justification; remain professional."
+                }
+            ],
+            hypothetical: [
+                {
+                    context: "Discussing what if scenarios",
+                    b1: { en: "If I had money, I would buy a house.", ar: "لو كان لدي المال، سأشتري منزلاً." },
+                    b2: { en: "If I had more money, I think I would like to travel more.", ar: "لو كان لدي المزيد من المال، أعتقد أنني أود السفر أكثر." },
+                    b2plus: { en: "Were I to come into considerable means, I might be inclined to pursue extensive travels throughout Europe.", ar: "لو كان لدي وسائل كبيرة، قد أميل إلى متابعة رحلات واسعة النطاق في جميع أنحاء أوروبا." },
+                    c1: { en: "Were I fortunate enough to acquire substantial financial resources, I confess I should be positively inclined to embark upon an extended peregrination across the continent.", ar: "لو كنت محظوظاً بما يكفي للحصول على موارد مالية كبيرة، أعترف بأنني سأكون مائلاً بشكل إيجابي للشروع في رحلة طويلة عبر القارة." },
+                    notes: "'If...would' → subjunctive mood; 'were I' (more formal)."
+                }
+            ],
+            clarify: [
+                {
+                    context: "Asking for clarification",
+                    b1: { en: "What do you mean? I don't understand.", ar: "ماذا تقصد؟ لا أفهم." },
+                    b2: { en: "Could you explain that a bit more? I didn't quite catch that.", ar: "هل يمكنك أن تشرح ذلك أكثر قليلاً؟ لم أفهمه تماماً." },
+                    b2plus: { en: "I wonder if you might elaborate somewhat on that point. Your meaning wasn't entirely clear to me.", ar: "أتساءل ما إذا كنت قد توسع قليلاً على هذه النقطة. معناك لم يكن واضحاً تماماً لي." },
+                    c1: { en: "Forgive me, but I should be grateful if you might deign to elucidate that particular point with somewhat greater specificity.", ar: "سامحني، لكنني سأكون ممتناً إذا تفضلت بتوضيح تلك النقطة المحددة بمزيد من التفاصيل." },
+                    notes: "Move from direct question to polite request for elaboration."
+                }
+            ],
+            apology: [
+                {
+                    context: "Saying you're sorry",
+                    b1: { en: "I'm sorry. I made a mistake.", ar: "أنا آسف. ارتكبت خطأ." },
+                    b2: { en: "I apologize. I shouldn't have done that.", ar: "أعتذر. كان يجب ألا أفعل ذلك." },
+                    b2plus: { en: "I do sincerely apologize for my lapse in judgment. I recognize that my actions were rather ill-advised.", ar: "أعتذر بصدق عن عدم حكمتي. أعترف بأن أفعالي كانت غير حكيمة إلى حد ما." },
+                    c1: { en: "I must beg your pardon most humbly. My conduct was, I confess, entirely inexcusable, and I am profoundly contrite.", ar: "يجب أن أطلب عفوك بكل تواضع. تصرفي كان، أعترف، غير قابل للعذر تماماً، وأنا نادم بعمق." },
+                    notes: "'Sorry' → 'beg your pardon'; show remorse; take responsibility."
+                }
+            ],
+            compliment: [
+                {
+                    context: "Praising someone",
+                    b1: { en: "You are good. That is nice.", ar: "أنت جيد. هذا لطيف." },
+                    b2: { en: "You did a great job. I really admire your work.", ar: "لقد فعلت عملاً رائعاً. أنا حقاً أعجب بعملك." },
+                    b2plus: { en: "Your performance was truly exemplary. I must commend you on your remarkable dedication and skill.", ar: "كان أدائك نموذجياً حقاً. يجب أن أثني عليك على تفانيك ومهارتك الملحوظة." },
+                    c1: { en: "Your endeavors have been nothing short of superlative. The caliber of your work evinces both consummate professionalism and a rather commendable level of perspicacity.", ar: "كانت جهودك متفوقة تماماً. يظهر مستوى عملك احترافية كاملة ومستوى مثير للإعجاب من البصيرة." },
+                    notes: "Add specificity; use formal praise; 'evinces' (shows)."
+                }
+            ],
+            comparison: [
+                {
+                    context: "Comparing two things",
+                    b1: { en: "This is bigger than that. This is better.", ar: "هذا أكبر من ذاك. هذا أفضل." },
+                    b2: { en: "This one is larger and more efficient than the other. I prefer this one.", ar: "هذا أكبر وأكثر كفاءة من الآخر. أفضل هذا." },
+                    b2plus: { en: "While both have merit, the former strikes me as considerably more robust and efficient in comparison.", ar: "بينما كل منهما له فضيله، يبدو لي أن الأول أكثر قوة وكفاءة بشكل كبير في المقارنة." },
+                    c1: { en: "A juxtaposition of the two reveals that the former, whilst not without its merits, pales somewhat in comparison to the latter's demonstrable superiority.", ar: "تجنباً من المقارنة بين الاثنين يكشف أن الأول، بينما لا يخلو من الفضائل، يبدو شاحباً نسبياً مقارنة بتفوق الآخر الملموس." },
+                    notes: "'Bigger/better' → 'demonstrates superiority'; use formal comparison."
+                }
+            ],
+            cause_effect: [
+                {
+                    context: "Explaining why something happened",
+                    b1: { en: "I was tired because I worked a lot.", ar: "كنت متعباً لأنني عملت كثيراً." },
+                    b2: { en: "I was exhausted due to the extensive workload I had. As a result, I wasn't very productive.", ar: "كنت مرهقاً بسبب حجم العمل الكبير. نتيجة لذلك، لم أكن منتجاً جداً." },
+                    b2plus: { en: "The demanding nature of my workload precipitated considerable fatigue, which in turn undermined my productivity.", ar: "الطبيعة المرهقة لعملي أدت إلى إرهاق كبير، مما بدوره قلل من إنتاجيتي." },
+                    c1: { en: "The exigencies of my workload engendered a state of considerable lassitude, which subsequently impaired my professional efficacy.", ar: "تطلبات عملي أنتجت حالة من الإرهاق الكبير، مما أضر لاحقاً بكفاءتي المهنية." },
+                    notes: "'Because' → 'precipitated/engendered'; use abstract causation."
+                }
+            ],
+            conclusion: [
+                {
+                    context: "Wrapping up a conversation",
+                    b1: { en: "So that is why I think this. The end.", ar: "لذلك هذا هو السبب في اعتقادي بهذا. النهاية." },
+                    b2: { en: "So in conclusion, I believe this approach is the best option we have.", ar: "لذلك في الختام، أعتقد أن هذا النهج هو أفضل خيار لدينا." },
+                    b2plus: { en: "In light of these considerations, I believe we are compelled to conclude that this course of action represents the most prudent path forward.", ar: "في ضوء هذه الاعتبارات، أعتقد أننا مضطرون للتوصل إلى استنتاج مفاده أن هذا المسار يمثل أحكم طريق للمضي قدماً." },
+                    c1: { en: "In summation, the preponderance of evidence would seem to suggest that we should be well-advised to pursue this particular avenue, as it appears to offer the most expeditious resolution.", ar: "في الخلاصة، يبدو أن وزن الأدلة يشير إلى أننا سنكون محكمين إذا اتبعنا هذا المسار المحدد، حيث يبدو أنه يوفر الحل الأسرع." },
+                    notes: "'The end' → formal conclusion markers; 'expeditious' (efficient)."
+                }
+            ],
+            exception: [
+                {
+                    context: "Acknowledging exceptions or conditions",
+                    b1: { en: "Usually it is like this, but sometimes not.", ar: "عادة ما يكون الأمر هكذا، لكن أحياناً لا." },
+                    b2: { en: "Most of the time this is true, but there are some exceptions.", ar: "في معظم الأوقات هذا صحيح، لكن هناك بعض الاستثناءات." },
+                    b2plus: { en: "Whilst this generally holds true, there are certain notable exceptions that merit consideration.", ar: "بينما هذا عموماً صحيح، هناك استثناءات معينة جديرة بالنظر فيها." },
+                    c1: { en: "Notwithstanding the general veracity of this assertion, one would be remiss not to acknowledge certain circumscribed exceptions to the rule.", ar: "على الرغم من الحقيقة العامة لهذا الادعاء، لا يجب أن نهمل الاعتراف باستثناءات معينة محدودة للقاعدة." },
+                    notes: "'Usually' → 'notwithstanding'; acknowledge exceptions formally."
+                }
+            ],
+            emphasis: [
+                {
+                    context: "Stressing importance",
+                    b1: { en: "This is very important. I want to say this again.", ar: "هذا مهم جداً. أريد أن أقول هذا مرة أخرى." },
+                    b2: { en: "I cannot stress enough how important this is. It really matters.", ar: "لا يمكنني التأكيد بما يكفي على مدى أهمية هذا. إنه مهم حقاً." },
+                    b2plus: { en: "I must emphasize with considerable force that this matter is of paramount importance and cannot be overstated.", ar: "يجب أن أؤكد بقوة كبيرة أن هذه المسألة ذات أهمية قصوى ولا يمكن المبالغة فيها." },
+                    c1: { en: "I shall take the liberty of reiterating, in the most emphatic terms, that this particular matter constitutes a sine qua non, the importance of which verily cannot be exaggerated.", ar: "سأتخذ حرية إعادة التأكيد، بأقوى الكلمات، أن هذه المسألة المحددة تشكل شرطاً أساسياً، لا يمكن بالفعل المبالغة في أهميته." },
+                    notes: "'Very important' → 'sine qua non' (essential condition); reiterate formally."
+                }
+            ],
+            anecdote: [
+                {
+                    context: "Sharing a brief personal story",
+                    b1: { en: "One time I saw a dog. It was funny.", ar: "في مرة واحدة رأيت كلباً. كان مضحكاً." },
+                    b2: { en: "I once saw a rather amusing incident involving a dog. It made me laugh quite a lot.", ar: "في مرة واحدة رأيت حادثة مضحكة تتعلق بكلب. لقد جعلني أضحك كثيراً." },
+                    b2plus: { en: "I recall with some amusement an incident from some years past wherein I encountered a remarkably mischievous canine engaging in quite the most amusing antics.", ar: "أتذكر بقدر من السرور حادثة من سنوات مضت حيث التقيت بكلب وقح جداً يشارك في حركات مضحكة جداً." },
+                    c1: { en: "If I may indulge in a brief reminiscence, there occurred some years hence an encounter with a particularly recalcitrant hound whose comportment proved quite extraordinarily diverting and rather memorable.", ar: "إن سمحت لي بالانغماس في ذكرى موجزة، حدثت منذ سنوات التقاء مع كلب عنيد بشكل خاص تبين أن سلوكه مسلياً بشكل غير عادي وجدير بالتذكر." },
+                    notes: "Move from simple story to anecdotal narrative with flourish."
+                }
+            ],
+            small_talk: [
+                {
+                    context: "Starting casual conversation",
+                    b1: { en: "Hello. The weather is nice.", ar: "مرحبا. الطقس لطيف." },
+                    b2: { en: "Hi there. Beautiful weather we're having today, isn't it?", ar: "مرحبا. طقس جميل لدينا اليوم، أليس كذلك؟" },
+                    b2plus: { en: "What a rather splendid day we're being treated to, wouldn't you say? The meteorological conditions are quite propitious.", ar: "يا لهذا اليوم الرائع الذي نحظى به، ألا توافق؟ الظروف الجوية مواتية جداً." },
+                    c1: { en: "One must confess that the atmospheric conditions today are rather felicitous, affording us a most agreeable respite from the inclement weather of recent weeks.", ar: "يجب أن يعترف المرء بأن الظروف الجوية اليوم مواتية جداً، مما يوفر لنا فترة راحة لطيفة جداً من الطقس السيء في الأسابيع الأخيرة." },
+                    notes: "'Nice weather' → 'propitious conditions'; use formal courtesy."
+                }
+            ],
+            professional: [
+                {
+                    context: "Business communication",
+                    b1: { en: "I want to talk about the project. Can we meet?", ar: "أريد أن أتحدث عن المشروع. هل يمكننا الالتقاء؟" },
+                    b2: { en: "I'd like to discuss the project in more detail. Would you have time for a meeting?", ar: "أود أن أناقش المشروع بمزيد من التفصيل. هل لديك وقت للاجتماع؟" },
+                    b2plus: { en: "I believe it would be rather beneficial to convene a more substantive discussion regarding the project parameters and deliverables.", ar: "أعتقد أنه سيكون مفيداً جداً أن نجري نقاشاً أكثر جوهراً بشأن معاملات المشروع والنتائج." },
+                    c1: { en: "I would be most grateful if we might arrange a more comprehensive dialogue concerning the project specifications, timelines, and anticipated deliverables.", ar: "سأكون ممتناً جداً إذا تمكنا من ترتيب حوار أكثر شمولاً بشأن مواصفات المشروع والجداول الزمنية والنتائج المتوقعة." },
+                    notes: "'Talk about' → 'comprehensive dialogue'; add specificity."
+                }
+            ],
+            challenge: [
+                {
+                    context: "Addressing a difficult situation",
+                    b1: { en: "This is hard. I don't know what to do.", ar: "هذا صعب. لا أعرف ماذا أفعل." },
+                    b2: { en: "This is quite challenging. I'm not entirely sure how best to proceed.", ar: "هذا صعب تماماً. لست متأكداً تماماً من أفضل طريقة للمضي قدماً." },
+                    b2plus: { en: "This presents rather formidable challenges, and I confess myself somewhat perplexed as to the optimal course of action.", ar: "يقدم هذا تحديات كبيرة جداً، وأعترف بأنني محتار إلى حد ما بشأن مسار العمل الأمثل." },
+                    c1: { en: "The circumstances herein present considerable and rather multifaceted challenges, which I must candidly acknowledge leave me somewhat at an impasse regarding the most expedient and efficacious resolution.", ar: "تقدم الظروف هنا تحديات كبيرة وسياقات متعددة الأوجه، والتي يجب أن أعترف بصراحة بأنها تتركني في مأزق إلى حد ما فيما يتعلق بالحل الأسرع والأكثر فعالية." },
+                    notes: "'Hard' → 'formidable challenges'; admit uncertainty formally."
+                }
+            ]
+        };
+
+        // ==== SM-2 SPACED REPETITION ====
+        class SM2Card {
+            constructor(id, en, ar, context) {
+                this.id = id;
+                this.en = en;
+                this.ar = ar;
+                this.context = context;
+                this.interval = 1;
+                this.easeFactor = 2.5;
+                this.repetitions = 0;
+                this.nextReview = new Date();
+            }
+            
+            update(quality) {
+                if (quality >= 3) {
+                    this.repetitions += 1;
+                } else {
+                    this.repetitions = 0;
+                }
+                
+                if (this.repetitions === 1) {
+                    this.interval = 1;
+                } else if (this.repetitions === 2) {
+                    this.interval = 3;
+                } else {
+                    this.interval = Math.round(this.interval * this.easeFactor);
+                }
+                
+                this.easeFactor = Math.max(
+                    1.3,
+                    this.easeFactor + 0.1 * (5 - quality)
+                );
+                
+                const nextDate = new Date();
+                nextDate.setDate(nextDate.getDate() + this.interval);
+                this.nextReview = nextDate;
+            }
+            
+            isDue() {
+                return new Date() >= this.nextReview;
+            }
+        }
+
+        let allCards = [];
+        let currentCardIdx = 0;
+        let currentMode = 'study';
+        let currentCategory = 'greeting';
+
+        // ==== INITIALIZE ====
+        function initApp() {
+            buildCards();
+            renderStudyMode();
+        }
+
+        function buildCards() {
+            let id = 0;
+            for (const [cat, items] of Object.entries(conversationData)) {
+                items.forEach(item => {
+                    ['b1', 'b2', 'b2plus', 'c1'].forEach(level => {
+                        allCards.push(
+                            new SM2Card(
+                                id++,
+                                item[level].en,
+                                item[level].ar,
+                                `${cat} (${level.toUpperCase()})`
+                            )
+                        );
+                    });
+                });
+            }
+            loadProgress();
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem('sm2-progress');
+            if (saved) {
+                const progress = JSON.parse(saved);
+                allCards.forEach(card => {
+                    const p = progress[card.id];
+                    if (p) {
+                        card.interval = p.interval;
+                        card.easeFactor = p.easeFactor;
+                        card.repetitions = p.repetitions;
+                        card.nextReview = new Date(p.nextReview);
+                    }
+                });
+            }
+        }
+
+        function saveProgress() {
+            const progress = {};
+            allCards.forEach(card => {
+                progress[card.id] = {
+                    interval: card.interval,
+                    easeFactor: card.easeFactor,
+                    repetitions: card.repetitions,
+                    nextReview: card.nextReview
+                };
+            });
+            localStorage.setItem('sm2-progress', JSON.stringify(progress));
+        }
+
+        // ==== STUDY MODE ====
+        function renderStudyMode() {
+            const cats = Object.keys(conversationData);
+            let catHtml = cats.map(cat => 
+                `<button class="cat-btn ${cat === currentCategory ? 'active' : ''}" onclick="selectCategory('${cat}')">${cat.charAt(0).toUpperCase() + cat.slice(1)}</button>`
+            ).join('');
+            document.getElementById('category-grid').innerHTML = catHtml;
+            
+            const items = conversationData[currentCategory];
+            let cardsHtml = items.map((item, idx) => `
+                <div class="card">
+                    <div class="context">${item.context}</div>
+                    <div class="level-buttons">
+                        <button class="level-btn active" onclick="switchLevel(this, ${idx}, 'b1')">B1</button>
+                        <button class="level-btn" onclick="switchLevel(this, ${idx}, 'b2')">B2</button>
+                        <button class="level-btn" onclick="switchLevel(this, ${idx}, 'b2plus')">B2+</button>
+                        <button class="level-btn" onclick="switchLevel(this, ${idx}, 'c1')">C1</button>
+                    </div>
+                    <div class="sentence-display">
+                        <div class="sentence-en">${item.b1.en}</div>
+                        <div class="sentence-ar">${item.b1.ar}</div>
+                    </div>
+                    <button class="audio-btn" onclick="speakSentence('${item.b1.en.replace(/'/g, "\\'")}')" title="Listen to pronunciation">🔊 Speak (B1)</button>
+                    <div class="notes">${item.notes}</div>
+                </div>
+            `).join('');
+            document.getElementById('study-cards').innerHTML = cardsHtml;
+        }
+
+        function selectCategory(cat) {
+            currentCategory = cat;
+            renderStudyMode();
+        }
+
+        function switchLevel(btn, cardIdx, level) {
+            const card = conversationData[currentCategory][cardIdx];
+            const parent = btn.parentElement.parentElement;
+            const display = parent.querySelector('.sentence-display');
+            const audioBtn = parent.querySelector('.audio-btn');
+            
+            display.innerHTML = `
+                <div class="sentence-en">${card[level].en}</div>
+                <div class="sentence-ar">${card[level].ar}</div>
+            `;
+            audioBtn.onclick = function() { speakSentence(card[level].en); };
+            audioBtn.textContent = `🔊 Speak (${level.toUpperCase()})`;
+            
+            btn.parentElement.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function speakSentence(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9;
+                utterance.lang = 'en-US';
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // ==== FLASHCARD MODE ====
+        function switchMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.mode-content').forEach(m => m.style.display = 'none');
+            document.getElementById(mode + '-mode').style.display = 'block';
+            
+            if (mode === 'flashcard') {
+                initFlashcardMode();
+            }
+        }
+
+        function initFlashcardMode() {
+            const dueCards = allCards.filter(c => c.isDue());
+            if (dueCards.length === 0) {
+                document.getElementById('flashcard-mode').innerHTML = `
+                    <div class="empty-state">
+                        <p>✅ All caught up! No cards due for review right now.</p>
+                        <p style="font-size: 13px; margin-top: 8px;">Come back later for spaced-repetition practice.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            currentCardIdx = Math.floor(Math.random() * dueCards.length);
+            const card = dueCards[currentCardIdx];
+            
+            updateFlashcardDisplay(card);
+            updateStats();
+        }
+
+        let isFlipped = false;
+        function toggleFlip() {
+            isFlipped = !isFlipped;
+            const dueCards = allCards.filter(c => c.isDue());
+            const card = dueCards[currentCardIdx];
+            updateFlashcardDisplay(card);
+        }
+
+        function updateFlashcardDisplay(card) {
+            document.getElementById('fc-context').textContent = card.context;
+            document.getElementById('fc-label').textContent = isFlipped ? 'Arabic' : 'English';
+            document.getElementById('fc-text').textContent = isFlipped ? card.ar : card.en;
+            document.getElementById('fc-text').className = 'card-text' + (isFlipped ? ' arabic' : '');
+            
+            const flashcard = document.getElementById('flashcard');
+            if (isFlipped) {
+                flashcard.classList.add('flipped');
+                document.getElementById('fc-text').style.direction = 'rtl';
+            } else {
+                flashcard.classList.remove('flipped');
+                document.getElementById('fc-text').style.direction = 'ltr';
+            }
+        }
+
+        function rateCard(quality) {
+            isFlipped = false;
+            const dueCards = allCards.filter(c => c.isDue());
+            const card = dueCards[currentCardIdx];
+            
+            const qualityMap = { hard: 2, good: 4, easy: 5 };
+            card.update(qualityMap[quality]);
+            saveProgress();
+            
+            initFlashcardMode();
+        }
+
+        function updateStats() {
+            const dueCards = allCards.filter(c => c.isDue());
+            const learned = allCards.filter(c => c.repetitions >= 1).length;
+            const progress = Math.round((learned / allCards.length) * 100);
+            
+            document.getElementById('stats').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-label">Due Today</div>
+                    <div class="stat-value">${dueCards.length}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Learned</div>
+                    <div class="stat-value">${learned}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Progress</div>
+                    <div class="stat-value">${progress}%</div>
+                </div>
+            `;
+            document.getElementById('progress-fill').style.width = progress + '%';
+        }
+
+        initApp();
+    </script>
+</body>
+</html>
